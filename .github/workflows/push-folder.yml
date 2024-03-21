@@ -3,7 +3,7 @@ name: Push Changed Files
 on:
   push:
     paths:
-      - 'path/to/source/*'  # Pfade anpassen
+      - 'data/*'  # Pfade anpassen
 
 jobs:
   push-changed-files:
