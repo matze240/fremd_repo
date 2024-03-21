@@ -22,7 +22,7 @@ jobs:
       - name: Check for changes
         id: check_changes
         run: |
-          changed_files=$(git diff --name-only ${{ steps.get_previous_commit.outputs.previous_commit }} HEAD)
+          changed_files=$(git diff --name-status ${{ steps.get_previous_commit.outputs.previous_commit }} HEAD)
           if [ -z "$changed_files" ]; then
             echo "No changes detected."
             exit 1
@@ -32,13 +32,9 @@ jobs:
       - name: Move changed files
         run: |
           mkdir -p data_extern/
-          cp -t data_extern/ ${{ steps.check_changes.outputs.changed_files }}
+          while IFS= read -r line; do
+            status=$(echo "$line" | cut -d' ' -f1)
+            file=$(echo "$line" | cut -d' ' -f2-)
+            if [ "$status" != "D" ]; then
+              cp -t data_extern/ "$file"
           
-      - name: Commit and push changes
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git config --global url.https://${{ secrets.first }}@github.com/.insteadOf https://github.com/
-          git add .
-          git commit -m "Move changed files from source to destination"
-          git push
