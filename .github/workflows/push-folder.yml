@@ -13,16 +13,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
         
-      - name: Get previous commit hash
-        id: get_previous_commit
-        run: |
-          previous_commit=$(git log --pretty=format:'%h' -n 1)
-          echo "::set-output name=previous_commit::$previous_commit"
-          
       - name: Check for changes
         id: check_changes
         run: |
-          changed_files=$(git diff --name-status ${{ steps.get_previous_commit.outputs.previous_commit }} HEAD)
+          previous_commit=${GITHUB_SHA}^
+          changed_files=$(git diff --name-status $previous_commit HEAD)
           if [ -z "$changed_files" ]; then
             echo "No changes detected."
             exit 1
@@ -37,4 +32,14 @@ jobs:
             file=$(echo "$line" | cut -d' ' -f2-)
             if [ "$status" != "D" ]; then
               cp -t data_extern/ "$file"
+            fi
+          done <<<"${{ steps.check_changes.outputs.changed_files }}"
           
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git config --global url.https://${{ secrets.first }}@github.com/.insteadOf https://github.com/
+          git add .
+          git commit -m "Move changed files from source to destination"
+          git push
