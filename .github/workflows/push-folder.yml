@@ -16,5 +16,5 @@ jobs:
       - name: Move modified files
         run: |
           mkdir -p data_extern
-          last_commit_date=$(git log -1 --format="%ai")
+          last_commit_date=$(git log -1 --format="%ai" --date=iso-strict)
           find data -type f -newermt "$last_commit_date" -exec mv {} data_extern/ \;
