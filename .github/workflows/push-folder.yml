@@ -18,3 +18,12 @@ jobs:
           mkdir -p data_extern
           last_commit_date=$(git log -1 --format="%ai" --date=iso-strict)
           find data -type f -newermt "$last_commit_date" -exec mv {} data_extern/ \;
+          
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "matze240"
+          config --global url.https://${{ secrets.first}}@github.com/.insteadOf https://github.com/
+          git add .
+          git commit -m "Move modified files from 'data' to 'data_extern'"
+          git push
