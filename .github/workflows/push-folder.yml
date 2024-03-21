@@ -13,11 +13,16 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
         
+      - name: Get previous commit hash
+        id: get_previous_commit
+        run: |
+          previous_commit=$(git log --pretty=format:'%H' -n 1)
+          echo "::set-output name=previous_commit::$previous_commit"
+          
       - name: Check for changes
         id: check_changes
         run: |
-          previous_commit=${GITHUB_SHA}^
-          changed_files=$(git diff --name-status $previous_commit HEAD)
+          changed_files=$(git diff --name-status ${{ steps.get_previous_commit.outputs.previous_commit }} HEAD)
           if [ -z "$changed_files" ]; then
             echo "No changes detected."
             exit 1
