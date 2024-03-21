@@ -1,42 +1,19 @@
-name: Push Changed Files
+name: Move Modified Files
 
 on:
   push:
-    branches:
-      - main  # oder den Namen Ihrer Hauptentwicklungsbranch
-    paths:
-      - 'data/*.md'
+      branches:
+      - main
+
 jobs:
-  push_changed_files:
+   move_files:
     runs-on: ubuntu-latest
-    
+
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-        
-      - name: Check for changed files
-        id: check_changes
-        run: |
-          changed_files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} data/)
-          if [ -z "$changed_files" ]; then
-            echo "No changes detected in the 'data' folder."
-            exit 0
-          fi
-          echo "::set-output name=changed_files::$changed_files"
-      
-      - name: Create target directory
-        run: mkdir -p data_extern/
-        
-      - name: Copy changed files to target directory
-        run: |
-          for file in ${{ steps.check_changes.outputs.changed_files }}; do
-            cp "$file" data_extern/
-          done
-          
-      - name: Commit and push changes
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add data_extern/
-          git commit -m "Update changed files in 'data_extern'"
-          git push
+           - name: Checkout repository
+             uses: actions/checkout@v2
+
+           - name: Move modified files
+             run: |
+              mkdir data_extern
+              find data -type f -newermt "$(git log -1 --format=%cd)" -exec mv {} data_extern/ \;
