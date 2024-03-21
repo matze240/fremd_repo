@@ -1,50 +1,42 @@
-name: Move Changed Files
+name: Push Changed Files
 
 on:
   push:
     branches:
       - main  # oder den Namen Ihrer Hauptentwicklungsbranch
-
+    paths:
+      - 'data/*.md'
 jobs:
-  move_changed_files:
+  push_changed_files:
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
         
-      - name: Get previous commit hash
-        id: get_previous_commit
-        run: |
-          previous_commit=$(git log --pretty=format:'%H' -n 1)
-          echo "::set-output name=previous_commit::$previous_commit"
-          
-      - name: Check for changes
+      - name: Check for changed files
         id: check_changes
         run: |
-          changed_files=$(git diff --name-status ${{ steps.get_previous_commit.outputs.previous_commit }} HEAD)
+          changed_files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} data/)
           if [ -z "$changed_files" ]; then
-            echo "No changes detected."
-            exit 1
+            echo "No changes detected in the 'data' folder."
+            exit 0
           fi
           echo "::set-output name=changed_files::$changed_files"
-          
-      - name: Move changed files
+      
+      - name: Create target directory
+        run: mkdir -p data_extern/
+        
+      - name: Copy changed files to target directory
         run: |
-          mkdir -p data_extern/
-          while IFS= read -r line; do
-            status=$(echo "$line" | cut -d' ' -f1)
-            file=$(echo "$line" | cut -d' ' -f2-)
-            if [ "$status" != "D" ]; then
-              cp -t data_extern/ "$file"
-            fi
-          done <<<"${{ steps.check_changes.outputs.changed_files }}"
+          for file in ${{ steps.check_changes.outputs.changed_files }}; do
+            cp "$file" data_extern/
+          done
           
       - name: Commit and push changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git config --global url.https://${{ secrets.first }}@github.com/.insteadOf https://github.com/
-          git add .
-          git commit -m "Move changed files from source to destination"
+          git add data_extern/
+          git commit -m "Update changed files in 'data_extern'"
           git push
