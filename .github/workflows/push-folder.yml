@@ -2,18 +2,19 @@ name: Move Modified Files
 
 on:
   push:
-      branches:
+    branches:
       - main
 
 jobs:
-   move_files:
+  move_files:
     runs-on: ubuntu-latest
 
     steps:
-           - name: Checkout repository
-             uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-           - name: Move modified files
-             run: |
-              mkdir -p data_extern
-              find data -type f -newermt "$(git log -1 --format=%cd)" -exec mv {} data_extern/ \;
+      - name: Move modified files
+        run: |
+          mkdir -p data_extern
+          last_commit_date=$(git log -1 --format="%ai")
+          find data -type f -newermt "$last_commit_date" -exec mv {} data_extern/ \;
