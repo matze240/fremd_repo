@@ -73,4 +73,4 @@
 
 ## Comments
 
-The CHMO is a better Taxonomy implementing a lot of process chemistry related terms into the obo, but with only minimal relations between each other. Mainly used as a graph used for ELN-like tools
+The CHMO is a better Taxonomy implementing a lot of prrocess chemistry related terms into the obo, but with only minimal relations between each other. Mainly used as a graph used for ELN-like tools
