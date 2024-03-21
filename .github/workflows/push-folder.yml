@@ -23,7 +23,7 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "matze240"
-          config --global url.https://${{ secrets.first}}@github.com/.insteadOf https://github.com/
+          git config --global url.https://${{ secrets.first}}@github.com/.insteadOf https://github.com/
           git add .
           git commit -m "Move modified files from 'data' to 'data_extern'"
           git push
