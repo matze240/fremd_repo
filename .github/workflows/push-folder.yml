@@ -15,5 +15,5 @@ jobs:
 
            - name: Move modified files
              run: |
-              mkdir data_extern
+              mkdir -p data_extern
               find data -type f -newermt "$(git log -1 --format=%cd)" -exec mv {} data_extern/ \;
