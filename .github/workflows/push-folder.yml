@@ -1,38 +1,44 @@
-name: Push Changed Files
+name: Push Changed File
 
 on:
   push:
     paths:
-      - 'data/*'  # Pfade anpassen
+      - 'data/**'  # Pfade anpassen
+  pull_request:
+    paths:
+      - 'data/**'  # Pfade anpassen
 
 jobs:
-  push-changed-files:
+  push-changed-file:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Check for changes
-        id: check_changes
+      - name: Get changed file
+        id: get_changed_file
         run: |
-          changed_files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- 'path/to/source/')
-          if [ -z "$changed_files" ]; then
-            echo "No changes detected."
-            exit 1
+          git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- 'path/to/source/' > changed_files.txt
+          cat changed_files.txt
+
+      - name: Copy changed file
+        run: |
+          changed_file=$(cat changed_files.txt)
+          if [ -n "$changed_file" ]; then
+            mkdir -p data_extern
+            cp "$changed_file" data_extern
+          else
+            echo "No files changed."
+            exit 0
           fi
-          echo "::set-output name=changed_files::$changed_files"
 
-      - name: Copy changed files
+      - name: Commit and push changed file
         run: |
-          mkdir -p data_extern
-          cp -r ${{ steps.check_changes.outputs.changed_files }} data_extern
-
-      - name: Commit and push changes
-        run: |
+          cd data_extern
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          config --global url.https://${{ secrets.first}}@github.com/.insteadOf https://github.com/
+          git config --global url.https://${{ secrets.first }}@github.com/.insteadOf https://github.com/
           git add .
-          git commit -m "Update changed files"
+          git commit -m "Update changed file"
           git push
