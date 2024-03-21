@@ -1,44 +1,38 @@
-name: Push Changed File
+name: Move Changed Files
 
 on:
   push:
-    paths:
-      - 'data/**'  # Pfade anpassen
-  pull_request:
-    paths:
-      - 'data/**'  # Pfade anpassen
+    branches:
+      - main  # oder den Namen Ihrer Hauptentwicklungsbranch
 
 jobs:
-  push-changed-file:
+  move_changed_files:
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-
-      - name: Get changed file
-        id: get_changed_file
+        
+      - name: Check for changes
+        id: check_changes
         run: |
-          git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- 'path/to/source/' > changed_files.txt
-          cat changed_files.txt
-
-      - name: Copy changed file
-        run: |
-          changed_file=$(cat changed_files.txt)
-          if [ -n "$changed_file" ]; then
-            mkdir -p data_extern
-            cp "$changed_file" data_extern
-          else
-            echo "No files changed."
-            exit 0
+          changed_files=$(git diff --name-only HEAD^ HEAD)
+          if [ -z "$changed_files" ]; then
+            echo "No changes detected."
+            exit 1
           fi
-
-      - name: Commit and push changed file
+          echo "::set-output name=changed_files::$changed_files"
+          
+      - name: Move changed files
         run: |
-          cd data_extern
+          mkdir -p data_extern/
+          cp -t data_extern/ ${{ steps.check_changes.outputs.changed_files }}
+          
+      - name: Commit and push changes
+        run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git config --global url.https://${{ secrets.first }}@github.com/.insteadOf https://github.com/
           git add .
-          git commit -m "Update changed file"
+          git commit -m "Move changed files from source to destination"
           git push
