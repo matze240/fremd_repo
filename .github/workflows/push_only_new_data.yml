@@ -35,18 +35,20 @@ jobs:
             cp "$file" data_extern/
           done
 
-      - name: Dispatch trigger for push
-        uses: peter-evans/repository-dispatch@v1
-        with:
-          token: ${{ secrets.first }}
-          repository: Matze2402/fremd_repo
-          event-type: push 
+       
           
       - name: Commit and push changes
         run: |
           git add data_extern/
           git commit -m "Copy modified files to new_folder"
           git push
+
+      - name: Dispatch trigger for push
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.first }}
+          repository: Matze240/fremd_repo
+          event-type: push
 
       
       
