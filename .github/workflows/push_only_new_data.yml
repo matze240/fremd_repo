@@ -34,6 +34,13 @@ jobs:
           for file in ${{ steps.list_changed_files.outputs.changed_files }}; do
             cp "$file" data_extern/
           done
+
+      - name: Dispatch trigger for push
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.first }}
+          repository: Matze2402/fremd_repo
+          event-type: push 
           
       - name: Commit and push changes
         run: |
