@@ -27,3 +27,10 @@ jobs:
           git add .
           git commit -m "Copy files from source repository"
           git push
+
+      - name: Dispatch trigger for delete
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.first }}
+          repository: Matze2402/fremd_repo
+          event-type: delete 
