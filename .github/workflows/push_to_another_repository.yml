@@ -32,5 +32,5 @@ jobs:
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.first }}
-          repository: Matze2402/fremd_repo
+          repository: Matze240/fremd_repo
           event-type: delete 
